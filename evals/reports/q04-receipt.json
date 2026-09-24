@@ -1,0 +1,20 @@
+{
+  "query_id": "q04",
+  "family": "relational",
+  "question": "Who invested in the company Alice Chen works at?",
+  "gold": [
+    "people/bob-okafor"
+  ],
+  "expected_abstention": false,
+  "ranked": [
+    "people/alice-chen",
+    "companies/meridian-ventures",
+    "notes/coffee-chat-march",
+    "notes/sprint-42",
+    "companies/nova-robotics"
+  ],
+  "recall_all": false,
+  "first_hit": false,
+  "first_rank": null,
+  "gold_found": "0/1"
+}

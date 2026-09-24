@@ -1,0 +1,133 @@
+{
+  "schema_version": 1,
+  "ran_at": "2026-09-24T17:15:18.013011+00:00",
+  "config_card": {
+    "evals_version": "0.1.0",
+    "adapter": {
+      "name": "grep-only",
+      "stack_id": "empiremind/evals-0.1.0"
+    },
+    "corpus_sha": "2a98f8eed5429da4",
+    "top_k": 5
+  },
+  "metrics": {
+    "n_questions": 6,
+    "recall_all@5": 0.6,
+    "first_hit@5": 0.6,
+    "mean_rank_first": 1.0,
+    "abstention_accuracy": 0.0
+  },
+  "per_question": [
+    {
+      "query_id": "q01",
+      "family": "factoid",
+      "question": "Who owns the motion-planning stack at Nova Robotics?",
+      "gold": [
+        "people/alice-chen"
+      ],
+      "expected_abstention": false,
+      "ranked": [
+        "people/alice-chen",
+        "companies/nova-robotics",
+        "notes/sprint-42",
+        "docs/wiki-motion-planning",
+        "people/bob-okafor"
+      ],
+      "recall_all": true,
+      "first_hit": true,
+      "first_rank": 1,
+      "gold_found": "1/1"
+    },
+    {
+      "query_id": "q02",
+      "family": "factoid",
+      "question": "What reduced motion-planning latency this sprint, and where is it documented?",
+      "gold": [
+        "notes/sprint-42",
+        "docs/wiki-motion-planning"
+      ],
+      "expected_abstention": false,
+      "ranked": [
+        "notes/sprint-42",
+        "docs/wiki-motion-planning",
+        "people/alice-chen"
+      ],
+      "recall_all": true,
+      "first_hit": true,
+      "first_rank": 1,
+      "gold_found": "2/2"
+    },
+    {
+      "query_id": "q03",
+      "family": "concept",
+      "question": "Which Austin-based fund backed the warehouse robot maker?",
+      "gold": [
+        "companies/meridian-ventures"
+      ],
+      "expected_abstention": false,
+      "ranked": [
+        "companies/meridian-ventures",
+        "companies/nova-robotics",
+        "notes/board-minutes-q1"
+      ],
+      "recall_all": true,
+      "first_hit": true,
+      "first_rank": 1,
+      "gold_found": "1/1"
+    },
+    {
+      "query_id": "q04",
+      "family": "relational",
+      "question": "Who invested in the company Alice Chen works at?",
+      "gold": [
+        "people/bob-okafor"
+      ],
+      "expected_abstention": false,
+      "ranked": [
+        "people/alice-chen",
+        "companies/meridian-ventures",
+        "notes/coffee-chat-march",
+        "notes/sprint-42",
+        "companies/nova-robotics"
+      ],
+      "recall_all": false,
+      "first_hit": false,
+      "first_rank": null,
+      "gold_found": "0/1"
+    },
+    {
+      "query_id": "q05",
+      "family": "relational",
+      "question": "Which company did the fund that Bob Okafor works for invest in?",
+      "gold": [
+        "companies/nova-robotics"
+      ],
+      "expected_abstention": false,
+      "ranked": [
+        "companies/meridian-ventures",
+        "people/bob-okafor",
+        "notes/board-minutes-q1",
+        "notes/coffee-chat-march"
+      ],
+      "recall_all": false,
+      "first_hit": false,
+      "first_rank": null,
+      "gold_found": "0/1"
+    },
+    {
+      "query_id": "q06",
+      "family": "abstention",
+      "question": "What is the Series C valuation of Nova Robotics?",
+      "gold": [],
+      "expected_abstention": true,
+      "ranked": [
+        "companies/nova-robotics",
+        "people/bob-okafor",
+        "companies/meridian-ventures",
+        "people/alice-chen",
+        "notes/board-minutes-q1"
+      ],
+      "abstention_correct": false
+    }
+  ]
+}

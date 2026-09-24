@@ -1,0 +1,18 @@
+{
+  "query_id": "q03",
+  "family": "concept",
+  "question": "Which Austin-based fund backed the warehouse robot maker?",
+  "gold": [
+    "companies/meridian-ventures"
+  ],
+  "expected_abstention": false,
+  "ranked": [
+    "companies/meridian-ventures",
+    "companies/nova-robotics",
+    "notes/board-minutes-q1"
+  ],
+  "recall_all": true,
+  "first_hit": true,
+  "first_rank": 1,
+  "gold_found": "1/1"
+}

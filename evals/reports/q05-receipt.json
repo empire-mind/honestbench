@@ -1,0 +1,19 @@
+{
+  "query_id": "q05",
+  "family": "relational",
+  "question": "Which company did the fund that Bob Okafor works for invest in?",
+  "gold": [
+    "companies/nova-robotics"
+  ],
+  "expected_abstention": false,
+  "ranked": [
+    "companies/meridian-ventures",
+    "people/bob-okafor",
+    "notes/board-minutes-q1",
+    "notes/coffee-chat-march"
+  ],
+  "recall_all": false,
+  "first_hit": false,
+  "first_rank": null,
+  "gold_found": "0/1"
+}
