@@ -1,0 +1,19 @@
+{
+  "query_id": "q02",
+  "family": "factoid",
+  "question": "What reduced motion-planning latency this sprint, and where is it documented?",
+  "gold": [
+    "notes/sprint-42",
+    "docs/wiki-motion-planning"
+  ],
+  "expected_abstention": false,
+  "ranked": [
+    "notes/sprint-42",
+    "docs/wiki-motion-planning",
+    "people/alice-chen"
+  ],
+  "recall_all": true,
+  "first_hit": true,
+  "first_rank": 1,
+  "gold_found": "2/2"
+}

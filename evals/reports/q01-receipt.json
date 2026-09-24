@@ -1,0 +1,20 @@
+{
+  "query_id": "q01",
+  "family": "factoid",
+  "question": "Who owns the motion-planning stack at Nova Robotics?",
+  "gold": [
+    "people/alice-chen"
+  ],
+  "expected_abstention": false,
+  "ranked": [
+    "people/alice-chen",
+    "companies/nova-robotics",
+    "notes/sprint-42",
+    "docs/wiki-motion-planning",
+    "people/bob-okafor"
+  ],
+  "recall_all": true,
+  "first_hit": true,
+  "first_rank": 1,
+  "gold_found": "1/1"
+}

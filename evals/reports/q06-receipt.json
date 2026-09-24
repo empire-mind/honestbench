@@ -1,0 +1,15 @@
+{
+  "query_id": "q06",
+  "family": "abstention",
+  "question": "What is the Series C valuation of Nova Robotics?",
+  "gold": [],
+  "expected_abstention": true,
+  "ranked": [
+    "companies/nova-robotics",
+    "people/bob-okafor",
+    "companies/meridian-ventures",
+    "people/alice-chen",
+    "notes/board-minutes-q1"
+  ],
+  "abstention_correct": false
+}

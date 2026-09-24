@@ -1,0 +1,183 @@
+#!/usr/bin/env python3
+"""factory CLI — run code through the code factory.
+
+Usage:
+    factory run --language python --timeout 10 - < code.py
+    echo 'echo hi' | factory run --language bash -
+    factory run --language node --timeout 5 --json - < code.js
+    factory run --language bun --network - < app.js     # opt INTO network
+    factory run --secret-file api_key=/path/to/key - < code.py
+    factory backends
+"""
+import argparse
+import json
+import os
+import subprocess
+import sys
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+
+import factory  # noqa: E402
+
+BACKEND_NAMES = ("venv-subprocess", "plain-subprocess", "docker-sandbox")
+
+
+def cmd_backends(_args):
+    docker_ok, docker_reason = factory.docker_status()
+    rows = [
+        ("venv-subprocess", factory.VENV_PYTHON.exists()),
+        ("plain-subprocess", True),
+        ("docker-sandbox", docker_ok, docker_reason),
+        ("node-runtime", factory._runtime_available("node")),
+        ("bun-runtime", factory._runtime_available("bun")),
+        ("unshare-net", bool(__import__("shutil").which("unshare"))),
+    ]
+    for row in rows:
+        name, ok = row[0], row[1]
+        extra = f" ({row[2]})" if len(row) > 2 and not ok else ""
+        print(f"{name}: {'available' if ok else 'unavailable'}{extra}")
+
+
+def cmd_run(args):
+    if args.code == "-":
+        code = sys.stdin.read()
+    else:
+        with open(args.code, encoding="utf-8") as fh:
+            code = fh.read()
+
+    # --guard: destructive-command scan for bash runs, adapted from
+    # garrytan/gstack /careful (MIT). Additive: off unless requested.
+    if args.guard:
+        if args.language != "bash":
+            print("factory: --guard only applies to bash runs; skipping scan",
+                  file=sys.stderr)
+        else:
+            guardian = os.path.join(
+                os.path.dirname(os.path.abspath(__file__)),
+                "..", "gstack-adopted", "guardian.py")
+            try:
+                g = subprocess.run(
+                    [sys.executable, guardian, "--cmd", code, "--json"],
+                    capture_output=True, text=True, timeout=30)
+                data = json.loads(g.stdout or "{}")
+                tier = data.get("tier", "clean")
+                for f in data.get("findings", []):
+                    print(f"factory: [guardian/{tier}] {f['pattern']}: "
+                          f"{f['why']}", file=sys.stderr)
+                if tier == "deny":
+                    print("factory: --guard DENY: refusing to run",
+                          file=sys.stderr)
+                    return 2
+            except Exception as exc:
+                print(f"factory: --guard scan failed ({exc}); refusing to run",
+                      file=sys.stderr)
+                return 2
+
+    extra_env = {}
+    for item in args.env or []:
+        if "=" not in item:
+            print(f"factory: ignoring malformed --env {item!r} (want NAME=VALUE)",
+                  file=sys.stderr)
+            continue
+        k, v = item.split("=", 1)
+        extra_env[k] = v
+
+    secret_files = {}
+    for item in args.secret_file or []:
+        if "=" not in item:
+            print(f"factory: ignoring malformed --secret-file {item!r} "
+                  f"(want NAME=PATH)", file=sys.stderr)
+            continue
+        name, path = item.split("=", 1)
+        try:
+            with open(path, encoding="utf-8") as fh:
+                secret_files[name] = fh.read()
+        except OSError as exc:
+            print(f"factory: cannot read secret file {path!r}: {exc}",
+                  file=sys.stderr)
+            return 2
+
+    limits = factory.RunLimits(
+        timeout_s=args.timeout,
+        memory_mb=args.memory,
+        network=args.network,  # default False => net-isolated
+    )
+
+    try:
+        result = factory.submit(
+            code,
+            language=args.language,
+            timeout=args.timeout,
+            limits=limits,
+            backend=args.backend,
+            extra_env=extra_env or None,
+            secret_files=secret_files or None,
+        )
+    except factory.FactoryError as exc:
+        print(f"factory: error: {exc}", file=sys.stderr)
+        return 2
+
+    if args.json:
+        print(json.dumps({
+            "run_id": result.run_id,
+            "language": result.language,
+            "backend_used": result.backend_used,
+            "exit_code": result.exit_code,
+            "wall_time_s": result.wall_time_s,
+            "timed_out": result.timed_out,
+            "truncated": result.truncated,
+            "net_isolated": result.net_isolated,
+            "stdout": result.stdout,
+            "stderr": result.stderr,
+        }, indent=2))
+    else:
+        if result.stdout:
+            print(result.stdout, end="" if result.stdout.endswith("\n") else "\n")
+        if result.stderr:
+            print(result.stderr, file=sys.stderr,
+                  end="" if result.stderr.endswith("\n") else "\n")
+        print(f"[factory] run={result.run_id} backend={result.backend_used} "
+              f"exit={result.exit_code} wall={result.wall_time_s:.2f}s "
+              f"timed_out={result.timed_out} truncated={result.truncated} "
+              f"net_isolated={result.net_isolated}",
+              file=sys.stderr)
+    return 0 if result.exit_code == 0 and not result.timed_out else 1
+
+
+def main(argv=None):
+    ap = argparse.ArgumentParser(prog="factory", description="local code execution")
+    sub = ap.add_subparsers(dest="command", required=True)
+
+    r = sub.add_parser("run", help="execute code")
+    r.add_argument("code", help="path to code file, or - for stdin")
+    r.add_argument("--language", default="python",
+                   choices=["python", "bash", "node", "bun"])
+    r.add_argument("--timeout", type=float, default=30.0,
+                   help="wall-clock timeout in seconds")
+    r.add_argument("--backend", default=None, choices=BACKEND_NAMES,
+                   help="force a backend (degrades gracefully if unavailable)")
+    r.add_argument("--env", action="append", default=None,
+                   help="extra env var NAME=VALUE (secret-looking names dropped)")
+    r.add_argument("--secret-file", action="append", default=None,
+                   help="secret as NAME=PATH; written 0600, exposed via "
+                        "FACTORY_SECRET_DIR (paths only, never values)")
+    r.add_argument("--network", action="store_true",
+                   help="opt INTO network access (default: net-isolated)")
+    r.add_argument("--memory", type=int, default=256,
+                   help="RLIMIT_AS cap in MB (best-effort, default 256)")
+    r.add_argument("--json", action="store_true",
+                   help="emit the RunResult as JSON on stdout")
+    r.add_argument("--guard", action="store_true",
+                   help="scan bash code with gstack-adopted/guardian.py first; "
+                        "refuse on DENY, warn-and-continue on WARN")
+    r.set_defaults(func=cmd_run)
+
+    b = sub.add_parser("backends", help="show backend availability")
+    b.set_defaults(func=cmd_backends)
+
+    args = ap.parse_args(argv)
+    return args.func(args)
+
+
+if __name__ == "__main__":
+    sys.exit(main())
