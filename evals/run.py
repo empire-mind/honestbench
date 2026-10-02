@@ -17,6 +17,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from adapters.base import Page, Query
+from adapters.exact_match import ExactMatchAdapter
 from adapters.grep_only import GrepOnlyAdapter
 
 BLIND_FIELDS = {"gold": (), "expected_abstention": False}
@@ -37,6 +38,7 @@ def blind(query: Query) -> Query:
 HERE = Path(__file__).resolve().parent
 
 ADAPTERS = {
+    "exact-match": ExactMatchAdapter,
     "grep-only": GrepOnlyAdapter,
 }
 

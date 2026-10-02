@@ -1,5 +1,7 @@
 # honestbench — evals that measure verification, not just passing
 
+English | [简体中文](README.zh-CN.md)
+
 Every benchmark tells you pass/fail. HonestBench asks the harder question:
 **did the agent *verify* before claiming it was done?** It audits the
 trajectory, not just the patch — because ~10% of benchmark "passes" are
